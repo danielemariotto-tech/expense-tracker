@@ -1,13 +1,16 @@
 <template>
-    <h3>Add new transaction</h3>
+    <h3>{{ editingMode ? 'Edit' : 'Add new' }} transaction</h3>
     <form id="form" @submit.prevent="onSubmit">
+        <div class="form-control">
+            <button type="button" :class="{ active: type === 'expense' }" @click="setType('expense')">Expense</button>
+            <button type="button" :class="{ active: type === 'income' }" @click="setType('income')">Income</button>
+        </div>
         <div class="form-control">
             <label for="text">Text</label>
             <input type="text" id="text" v-model="text" placeholder="Enter text..." />
         </div>
         <div class="form-control">
-            <label for="amount">Amount <br />
-                (negative - expense, positive - income)</label>
+            <label for="amount">Amount</label>
             <input type="text" id="amount" v-model="amount" placeholder="Enter amount..." />
         </div>
         <div class="form-control">
@@ -33,7 +36,7 @@
                 <option value="Monthly">Monthly</option>
             </select>
         </div>
-        <button class="btn">{{editingMode ? 'Edit' : 'Add'}} transaction</button>
+        <button class="btn">{{ editingMode ? 'Edit' : 'Add' }} transaction</button>
     </form>
 </template>
 
@@ -58,10 +61,31 @@ const isRecurring = ref(false)
 const dayOfMonth = ref('')
 const frequency = ref('Monthly')
 const editingMode = ref(false)
-
-
-const categories = ref([
-    "Rent",
+const type = ref('expense')
+const incomeCategories = ["Salary",
+    "Bonus",
+    "Freelance Income",
+    "Business Income",
+    "Interest Income",
+    "Dividends",
+    "Rental Income",
+    "Capital Gains",
+    "Refunds & Rebates",
+    "Government Benefits",
+    "Pension",
+    "Scholarships & Grants",
+    "Alimony & Child Support",
+    "Gifts Received",
+    "Royalties",
+    "Sale of Items",
+    "Tax Refund",
+    "Lottery & Gambling Winnings",
+    "Side Hustle",
+    "Investment Returns",
+    "Affiliate Income",
+    "Crypto Earnings",
+    "Other Income"]
+const expensesCategories = ["Rent",
     "Mortgage",
     "Property Tax",
     "Home Insurance",
@@ -132,10 +156,9 @@ const categories = ref([
     "Business Expenses",
     "Emergency Fund",
     "Unplanned Purchases",
-    "Miscellaneous"
-])
+    "Miscellaneous"]
+const categories = ref(incomeCategories)
 
-// Watch for changes to editTransaction and populate form fields
 watch(
     () => props.editTransaction,
     (newVal) => {
@@ -159,6 +182,15 @@ watch(
     { immediate: true }
 )
 
+const setType = (val) => {
+    type.value = val
+    if (val === 'income') {
+        categories.value = incomeCategories
+    } else {
+        categories.value = expensesCategories
+    }
+}
+
 const onSubmit = () => {
     if (!text.value || !amount.value || !category.value) {
         toast.error("All fields must be filled")
@@ -169,9 +201,9 @@ const onSubmit = () => {
         return
     }
     const transaction = {
-        id: props.editTransaction?.id, // preserve id if editing
+        id: props.editTransaction?.id,
         text: text.value,
-        amount: parseFloat(amount.value),
+        amount: type.value === 'expense' ? -Math.abs(parseFloat(amount.value)) : Math.abs(parseFloat(amount.value)),
         category: category.value,
         isRecurring: isRecurring.value,
         dayOfMonth: isRecurring.value ? parseInt(dayOfMonth.value) : null,
@@ -188,3 +220,10 @@ const onSubmit = () => {
     editingMode.value = false
 }
 </script>
+
+<style scoped>
+.active {
+    background: #2ecc71;
+    color: #fff;
+}
+</style>
