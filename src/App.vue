@@ -52,7 +52,8 @@ const handleTransactionSended = (transactionData) => {
     transactions.value.push({
         id: generateID(),
         text: transactionData.text,
-        amount: transactionData.amount
+        amount: transactionData.amount,
+        category: transactionData.category
     })
     saveTransactionsToLocalStorage()
 

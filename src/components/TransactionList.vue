@@ -2,7 +2,8 @@
     <h3>History</h3>
     <ul id="list" class="list">
         <li v-for="t in transactions" :class="t.amount > 0 ? 'plus' : 'minus'">
-            {{ t.text }} <span>${{ t.amount }}</span><button class="delete-btn" @click="handleDelete(t.id)">x</button>
+            {{ t.text }} - Category: {{ t.category }} <span>${{ t.amount }}</span><button class="delete-btn"
+                @click="handleDelete(t.id)">x</button>
         </li>
     </ul>
 </template>
