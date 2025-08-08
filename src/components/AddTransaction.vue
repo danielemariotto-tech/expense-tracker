@@ -14,7 +14,23 @@
             <label for="category">Category</label>
             <br>
             <select v-model="category">
-                <option v-for="i in categories">{{ i }}</option>
+                <option v-for="i in categories" :key="i">{{ i }}</option>
+            </select>
+        </div>
+        <div class="form-control">
+            <label>
+                <input type="checkbox" v-model="isRecurring" />
+                Recurring
+            </label>
+        </div>
+        <div v-if="isRecurring" class="form-control">
+            <label for="dayOfMonth">Day of Month</label>
+            <input type="number" id="dayOfMonth" v-model="dayOfMonth" min="1" max="31" placeholder="Enter day..." />
+        </div>
+        <div v-if="isRecurring" class="form-control">
+            <label for="frequency">Frequency</label>
+            <select id="frequency" v-model="frequency">
+                <option value="Monthly">Monthly</option>
             </select>
         </div>
         <button class="btn">Add transaction</button>
@@ -26,24 +42,14 @@ import { ref, defineEmits } from 'vue'
 import { useToast } from 'vue-toastification';
 const emits = defineEmits(['transactionSended'])
 const toast = useToast()
-const onSubmit = () => {
-    if (!text.value || !amount.value || !category.value) {
-
-
-        toast.error("All fields must be filled")
-        return
-    }
-    const transaction = { text: text.value, amount: parseFloat(amount.value), category: category.value }
-    emits('transactionSended', transaction)
-
-    text.value = ''
-    amount.value = ''
-    category.value = ''
-}
 
 const text = ref('')
 const amount = ref('')
 const category = ref('')
+const isRecurring = ref(false)
+const dayOfMonth = ref('')
+const frequency = ref('Monthly')
+
 const categories = ref([
     "Rent",
     "Mortgage",
@@ -117,6 +123,32 @@ const categories = ref([
     "Emergency Fund",
     "Unplanned Purchases",
     "Miscellaneous"
-]
-)
+])
+
+const onSubmit = () => {
+    if (!text.value || !amount.value || !category.value) {
+        toast.error("All fields must be filled")
+        return
+    }
+    if (isRecurring.value && (!dayOfMonth.value || !frequency.value)) {
+        toast.error("Please provide day of month and frequency for recurring transaction")
+        return
+    }
+    const transaction = {
+        text: text.value,
+        amount: parseFloat(amount.value),
+        category: category.value,
+        isRecurring: isRecurring.value,
+        dayOfMonth: isRecurring.value ? parseInt(dayOfMonth.value) : null,
+        frequency: isRecurring.value ? frequency.value : null
+    }
+    emits('transactionSended', transaction)
+
+    text.value = ''
+    amount.value = ''
+    category.value = ''
+    isRecurring.value = false
+    dayOfMonth.value = ''
+    frequency.value = 'Monthly'
+}
 </script>

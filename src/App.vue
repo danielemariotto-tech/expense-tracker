@@ -6,7 +6,7 @@
         <IncomeExpenses :income="income" :expenses="expenses"></IncomeExpenses>
         <TransactionList @transactionDelete="handleTransactionDelete" :transactions="transactions"></TransactionList>
         <AddTransaction @transactionSended="handleTransactionSended"></AddTransaction>
-
+        <RecurringExpensesIncomes :transactions="recurringTransactions" />
     </div>
 </template>
 
@@ -19,6 +19,7 @@ import Balance from './components/Balance.vue';
 import IncomeExpenses from './components/IncomeExpenses.vue';
 import TransactionList from './components/TransactionList.vue';
 import AddTransaction from './components/AddTransaction.vue';
+import RecurringExpensesIncomes from './components/RecurringExpensesIncomes.vue';
 
 onMounted(() => {
     const transactionsFromStorage = JSON.parse(localStorage.getItem('transactions'))
@@ -53,7 +54,10 @@ const handleTransactionSended = (transactionData) => {
         id: generateID(),
         text: transactionData.text,
         amount: transactionData.amount,
-        category: transactionData.category
+        category: transactionData.category,
+        isRecurring: transactionData.isRecurring || false,
+        dayOfMonth: transactionData.isRecurring ? transactionData.dayOfMonth : null,
+        frequency: transactionData.isRecurring ? transactionData.frequency : null
     })
     saveTransactionsToLocalStorage()
 
@@ -67,4 +71,8 @@ const handleTransactionDelete = (id) => {
 const saveTransactionsToLocalStorage = () => {
     localStorage.setItem('transactions', JSON.stringify(transactions.value))
 }
+
+const recurringTransactions = computed(() =>
+    transactions.value.filter(t => t.isRecurring === true)
+)
 </script>
