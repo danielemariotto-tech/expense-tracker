@@ -33,15 +33,23 @@
                 <option value="Monthly">Monthly</option>
             </select>
         </div>
-        <button class="btn">Add transaction</button>
+        <button class="btn">{{editingMode ? 'Edit' : 'Add'}} transaction</button>
     </form>
 </template>
 
 <script setup>
-import { ref, defineEmits } from 'vue'
+import { ref, defineEmits, watch, defineProps } from 'vue'
 import { useToast } from 'vue-toastification';
+
 const emits = defineEmits(['transactionSended'])
 const toast = useToast()
+
+const props = defineProps({
+    editTransaction: {
+        type: Object,
+        default: null
+    }
+})
 
 const text = ref('')
 const amount = ref('')
@@ -49,6 +57,8 @@ const category = ref('')
 const isRecurring = ref(false)
 const dayOfMonth = ref('')
 const frequency = ref('Monthly')
+const editingMode = ref(false)
+
 
 const categories = ref([
     "Rent",
@@ -125,6 +135,30 @@ const categories = ref([
     "Miscellaneous"
 ])
 
+// Watch for changes to editTransaction and populate form fields
+watch(
+    () => props.editTransaction,
+    (newVal) => {
+        if (newVal) {
+            editingMode.value = true
+            text.value = newVal.text || ''
+            amount.value = newVal.amount !== undefined ? newVal.amount : ''
+            category.value = newVal.category || ''
+            isRecurring.value = newVal.isRecurring || false
+            dayOfMonth.value = newVal.dayOfMonth !== undefined && newVal.dayOfMonth !== null ? newVal.dayOfMonth : ''
+            frequency.value = newVal.frequency || 'Monthly'
+        } else {
+            text.value = ''
+            amount.value = ''
+            category.value = ''
+            isRecurring.value = false
+            dayOfMonth.value = ''
+            frequency.value = 'Monthly'
+        }
+    },
+    { immediate: true }
+)
+
 const onSubmit = () => {
     if (!text.value || !amount.value || !category.value) {
         toast.error("All fields must be filled")
@@ -135,6 +169,7 @@ const onSubmit = () => {
         return
     }
     const transaction = {
+        id: props.editTransaction?.id, // preserve id if editing
         text: text.value,
         amount: parseFloat(amount.value),
         category: category.value,
@@ -150,5 +185,6 @@ const onSubmit = () => {
     isRecurring.value = false
     dayOfMonth.value = ''
     frequency.value = 'Monthly'
+    editingMode.value = false
 }
 </script>
